@@ -8,7 +8,7 @@ Checklist, not prose. Check each box or state why it doesn't apply.
 - [x] **No data collection.** No analytics, cookies, forms or storage.
 - [x] **CSP-friendly element.** `nec-dino.js` uses no inline styles, no network, no `eval` or `new Function`, and no `innerHTML`. The upstream repo has a test that greps for these.
 - [ ] **GitHub Actions use pinned action hashes** — *not applicable*: no workflows. Pages builds from `main` (root) without Actions.
-- [ ] **Branch protection** — *explicitly skipped*: PR-only on `main` is kept by discipline, as in the workspace's other repos.
+- [ ] **Branch protection** — *skipped by choice* (Maerlin, 2026-10-06): it's available on this public repo, but PR-only on `main` is kept by discipline, as in the workspace's private repos where protection isn't available.
 - [x] **Dependabot alerts enabled.** There are no dependencies to watch.
 
 ## Updating

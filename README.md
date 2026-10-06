@@ -44,7 +44,7 @@ Everything here is generated in the private tool repo and copied in unchanged:
 - `nec-dino.js` and `img/nec-watch.png` are generated from the same pixel sprites the terminal dino uses.
 - A test there checks that the web element draws the same pixels as the terminal version.
 
-Current content: no-ethical-consumption @82dc27c (2026-10-06).
+Current content: no-ethical-consumption @02c3783 (2026-10-06).
 
 ## Licence
 
