@@ -46,6 +46,14 @@ Everything here is generated in the private tool repo and copied in unchanged:
 
 Current content: no-ethical-consumption @02c3783 (2026-10-06).
 
+## Credits
+
+- Made with Claude Code: the code and the pixel art were written by Claude, directed by Maerlin (concept, design and decisions).
+- Colours from the Retro Synth Sunset kitty theme by BuckedUnicorn, adapted from the VS Code theme retro-synth-dark.
+- Fonts: Silkscreen, Atkinson Hyperlegible and JetBrains Mono, under the SIL Open Font License 1.1 (licence texts in `fonts/`).
+
 ## Licence
 
-The fonts are under the SIL Open Font License 1.1 (see `fonts/`). Everything else: © Maerlin, all rights reserved for now.
+No licence is granted for the code or the art, so please don't reuse them without asking (open an issue). The fonts keep their own licence.
+
+*Superseded 2026-10-07:* ~~The fonts are under the SIL Open Font License 1.1 (see `fonts/`). Everything else: © Maerlin, all rights reserved for now.~~ *(Maerlin's call: credits instead of a copyright claim that may not cover AI-written parts.)*
