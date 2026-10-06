@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>no-ethical-consumption</title>
+<meta name="description" content="A token-burn critter pet for Claude Code: a pixel dino that eats your tokens, grows fat on your spend and explodes when you hit your plan limit.">
+<style>
+/* Fonts are self-hosted (no third-party requests), Latin subsets, SIL OFL 1.1: see fonts/OFL-*.txt. */
+@font-face { font-family: "Silkscreen"; font-weight: 400; font-display: swap; src: url("fonts/silkscreen-400.woff2") format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-display: swap; src: url("fonts/atkinson-hyperlegible-400.woff2") format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-display: swap; src: url("fonts/atkinson-hyperlegible-700.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 100 800; font-display: swap; src: url("fonts/jetbrains-mono-variable.woff2") format("woff2"); }
+/* Layout: one kitty window as the hero, then a moods board and a terminal capture; a single dark look (the kitty retro-synth theme). */
+:root {
+  --night: #1a1025;      /* kitty background */
+  --plum: #2d0036;       /* tab bar, ground strip */
+  --panel: #231633;      /* raised surfaces */
+  --ink: #ffeedd;        /* text */
+  --dim: #a98fdc;        /* secondary text */
+  --mint: #00d9a0;       /* the dino */
+  --pink: #ff0080;       /* panic, accents */
+  --gold: #ffd700;       /* food, active tab */
+  --line: #3b2a52;       /* hairlines */
+  --display: "Silkscreen", "Courier New", monospace;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font: 1.0625rem/1.6 var(--body);
+}
+.page {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px));
+  padding-block: 2.5rem 4rem;
+  display: grid;
+  gap: 4rem;
+}
+h1, h2 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.02em; }
+h1 { font-size: clamp(1.9rem, 6vw, 3.4rem); line-height: 1.05; color: var(--mint); }
+h2 { font-size: 1.35rem; color: var(--ink); }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--gold); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+code, pre, .mono { font-family: var(--mono); font-size: 0.92em; }
+.lede { color: var(--dim); font-size: 1.15rem; }
+header { display: grid; gap: 1rem; }
+.eyebrow { font-family: var(--mono); color: var(--pink); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* kitty window */
+.window { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--night); box-shadow: 0 1.5rem 3rem -1.5rem #000; }
+.tabs { display: flex; gap: 0; background: var(--plum); font-family: var(--mono); font-size: 0.8rem; overflow: hidden; }
+.tab { padding: 0.35rem 1.2rem 0.35rem 0.9rem; color: var(--dim); clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 50%, calc(100% - 0.7rem) 100%, 0 100%); background: #12081a; }
+.tab.active { background: #2a1535; color: var(--gold); font-weight: 600; }
+.pane { padding: 1.25rem 1.25rem 0; }
+.hero-dino { display: block; width: 100%; aspect-ratio: 2 / 1; max-width: 100%; }
+nec-dino canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.6rem 1.25rem 0.8rem; font-family: var(--mono); font-size: clamp(0.78rem, 2.4vw, 0.95rem); border-top: 1px solid var(--line); }
+.status .line { min-width: 0; overflow-wrap: anywhere; }
+.status .note { color: var(--dim); font-size: 0.8em; }
+
+/* moods board */
+.section { display: grid; gap: 1.25rem; }
+.stage-picker { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.stage-picker button {
+  font: 600 0.85rem var(--mono); color: var(--dim); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 0.35rem 0.9rem; cursor: pointer;
+}
+.stage-picker button[aria-pressed="true"] { color: var(--night); background: var(--mint); border-color: var(--mint); }
+.moods { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: 1rem; }
+.mood { display: grid; gap: 0.6rem; align-content: start; padding: 0.9rem; background: var(--panel); border-radius: 8px; min-width: 0; }
+.mood nec-dino { display: block; width: 100%; aspect-ratio: 2 / 1; }
+.mood h3 { margin: 0; font: 600 0.95rem var(--mono); }
+.mood p { color: var(--dim); font-size: 0.92rem; }
+.mood .rule { font-family: var(--mono); color: var(--ink); font-size: 0.85rem; }
+.mood.exploded h3 { color: var(--pink); }
+
+/* terminal capture + facts */
+.capture { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.capture figure { margin: 0; min-width: 0; }
+.capture img { display: block; width: 100%; max-width: 100%; image-rendering: pixelated; border-radius: 6px; border: 1px solid var(--line); }
+.capture figcaption { color: var(--dim); font-size: 0.9rem; margin-top: 0.5rem; }
+pre { margin: 0; padding: 1rem; background: var(--panel); border-radius: 8px; overflow-x: auto; line-height: 1.55; }
+pre .c { color: var(--dim); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.25rem 2rem; }
+.facts div { display: grid; gap: 0.35rem; min-width: 0; }
+.facts h3 { margin: 0; font: 600 1rem var(--body); color: var(--gold); }
+.facts p { color: var(--ink); font-size: 0.97rem; }
+footer { color: var(--dim); font-size: 0.9rem; display: grid; gap: 0.4rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+@media (max-width: 44rem) { .capture { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <span class="eyebrow">NEC-001 · a token-burn critter pet</span>
+    <h1>no ethical consumption</h1>
+    <p class="lede">A pixel dino for Claude Code. It eats your tokens, grows fat on your spend, sweats and panics when the burn rate climbs, and explodes when you hit your plan limit. You're going to spend the tokens anyway; might as well know how much.</p>
+  </header>
+
+  <section class="window" aria-label="The dino in a kitty window">
+    <div class="tabs" aria-hidden="true"><span class="tab active">1 nec --watch</span><span class="tab">2 claude</span><span class="tab">3 ~/projects</span></div>
+    <div class="pane"><nec-dino class="hero-dino" demo></nec-dino></div>
+    <div class="status"><span class="line mono" id="status-line">🦕💤 hatchling · 1.2M · $0.84 · $0/h · 4% of 5h</span><span class="note">example numbers</span></div>
+  </section>
+
+  <section class="section" aria-labelledby="moods-title">
+    <h2 id="moods-title">Five moods, three sizes</h2>
+    <p>The stage follows today's spend. The mood follows the burn rate over the last ten minutes and how much of your 5-hour window is gone, whichever is worse.</p>
+    <div class="stage-picker" role="group" aria-label="Stage">
+      <button type="button" id="stage-hatchling" data-stage="hatchling" aria-pressed="false">hatchling · from $0</button>
+      <button type="button" id="stage-chonky" data-stage="chonky" aria-pressed="true">chonky · from $15</button>
+      <button type="button" id="stage-unit" data-stage="absolute unit" aria-pressed="false">absolute unit · from $50</button>
+    </div>
+    <div class="moods">
+      <article class="mood"><nec-dino stage="chonky" mood="napping"></nec-dino><h3>napping</h3><p class="rule">nothing in 10 min</p><p>Zs bob above its head.</p></article>
+      <article class="mood"><nec-dino stage="chonky" mood="munching"></nec-dino><h3>munching</h3><p class="rule">tokens flowing</p><p>Wanders the pane, chewing.</p></article>
+      <article class="mood"><nec-dino stage="chonky" mood="sweating"></nec-dino><h3>sweating</h3><p class="rule">≥ $20/h or ≥ 75% of 5h</p><p>Keeps eating, dripping.</p></article>
+      <article class="mood"><nec-dino stage="chonky" mood="panicking"></nec-dino><h3>panicking</h3><p class="rule">≥ $40/h or ≥ 90% of 5h</p><p>Turns pink and shakes; the pane edges go red.</p></article>
+      <article class="mood exploded"><nec-dino stage="chonky" mood="exploded"></nec-dino><h3>exploded</h3><p class="rule">plan limit hit</p><p>Game over until the reset, then a new dino hatches.</p></article>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="terminal-title">
+    <h2 id="terminal-title">In your terminal</h2>
+    <div class="capture">
+      <figure>
+        <img src="img/nec-watch.png" width="384" height="192" alt="Animated capture of nec --watch: a mint pixel dino naps, eats, grows, sweats, panics in pink with red pane edges, explodes, and a new one rises out of the ground.">
+        <figcaption>Real frames from <code>nec --watch</code>: the same pixels kitty draws as half-block characters, two per cell.</figcaption>
+      </figure>
+      <pre><code><span class="c"># the dino and today's tokens and cost</span>
+python3 -m nec
+<span class="c"># one line, for status bars</span>
+python3 -m nec --line
+<span class="c"># live in a split pane (Ctrl-C quits)</span>
+python3 -m nec --watch
+<span class="c"># every sprite once</span>
+python3 -m nec --gallery</code></pre>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="how-title">
+    <h2 id="how-title">How it reads your spend</h2>
+    <div class="facts">
+      <div><h3>Local logs, counts only</h3><p>It reads Claude Code's session logs on your machine and keeps token counts and timestamps, never message content.</p></div>
+      <div><h3>API-equivalent cost</h3><p>Per-model rates, cache writes and reads, fast mode. On a subscription that's not your bill, just the size of the meal.</p></div>
+      <div><h3>Plan limits</h3><p>One line in the status-line script saves the 5-hour and weekly usage and their reset times, nothing else.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Python standard library only. The web dino is one file, <code>nec-dino.js</code>, generated from the same sprites, with no dependencies.</span>
+    <span>Fonts: Silkscreen, Atkinson Hyperlegible and JetBrains Mono, under the SIL Open Font License (licence texts in <code>fonts/</code>).</span>
+    <span>NEC-001 by Maerlin.</span>
+  </footer>
+</main>
+<script src="showcase.js"></script>
+<script src="nec-dino.js"></script>
+</body>
+</html>
